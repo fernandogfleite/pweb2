@@ -39,3 +39,5 @@ Rode as migrations:
 Após isso a aplicação está pronta para rodar:
 
 ```python manage.py runserver```
+
+Vá no seu navegador e acesse 127.0.0.1:8000 ou localhost:8000
