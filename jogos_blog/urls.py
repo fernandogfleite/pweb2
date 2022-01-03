@@ -23,5 +23,5 @@ urlpatterns = [
     path('login/', views.UserLogin.as_view(), name='login'),
     path('logout/', views.UserLogout.as_view(), name='logout'),
     path('authentication/', include('jogos_blog.apps.authentication.urls')),
-    path('main/', views.MainView.as_view(), name='main')
+    path('', views.MainView.as_view(), name='main')
 ]
