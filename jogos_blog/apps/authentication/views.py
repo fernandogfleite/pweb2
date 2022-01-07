@@ -1,108 +1,59 @@
-from django.contrib.auth import get_user_model, authenticate, login, logout
-from django.shortcuts import redirect
-from django.contrib import messages
-
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework import status
-
-from jogos_blog.apps.authentication.serializer import UserSerializer, LoginSerializer
-
-User = get_user_model()
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
 
 
-class UserViewSet(ModelViewSet):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-    renderer_classes = [TemplateHTMLRenderer]
-    
-    def list(self, request, *args, **kwargs):
-        if request.user.id is None:
-            return Response(template_name='user_register.html')
+from jogos_blog.apps.authentication.forms import LoginForm, RegisterForm
 
-        queryset = self.filter_queryset(self.get_queryset())
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+@login_required(login_url="login/")
+def main(request):
+    return render(request, 'main.html')
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({'users': serializer.data}, template_name='users.html')
-    
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            messages.success(request, "Usuário criado com sucesso")
-            return redirect('login')
-        return Response({'errors': serializer.errors},template_name='user_register.html')
-    
-    def update(self, request, *args, **kwargs):
-        if request.user.id is None:
+
+def register_user(request):
+    context = dict()
+    if request.method == 'POST':
+        form = RegisterForm(request.POST or None)
+
+        if form.is_valid():
+            data = form.cleaned_data
+            User.objects.create_user(**data)
             return redirect('login')
 
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        context['form'] = form
+        print(form.non_field_errors)
+        print(form.errors)
 
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
+    else:
+        context['form'] = RegisterForm()
 
-        return Response(serializer.data, template_name='user_detail.html')
-    
-    def retrieve(self, request, *args, **kwargs):
-        if request.user.id is None:
-            return redirect('login')
-
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, template_name='user_detail.html')
+    return render(request, 'register.html', context)
 
 
-class UserLogin(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'user_login.html'
+def do_login(request):
+    context = dict()
+    if request.method == "POST":
+        form = LoginForm(request.POST or None)
+        if form.is_valid():
+            user = authenticate(**form.cleaned_data)
 
-    def get(self, request, format=None):
-        if request.user.id is not None:
-            return redirect('main')
+            if user is not None:
+                login(request, user)
 
-        return Response(status=status.HTTP_200_OK)
+                return redirect('main')
 
+            form.add_error(None, "Credenciais incorretas")
 
-    def post(self, request, format=None):
-        serializer = LoginSerializer(data=request.data)
+        context['form'] = form
 
-        if not serializer.is_valid():
-            return Response({'serializer': serializer})
+    else:
+        context['form'] = LoginForm()
 
-        user = authenticate(username=serializer.data['username'], password=serializer.data['password'])
-        if user is not None:
-            login(request, user)
-
-            return redirect('main')
-
-        return Response({"error": "Credenciais incorretas"}, status=status.HTTP_400_BAD_REQUEST)
+    return render(request, 'login.html', context)
 
 
-class UserLogout(APIView):
-    def post(self, request, format=None):
-        if request.user.id is not None:      
-            logout(request)
-
-        return redirect('login')
-
-
-class MainView(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-
-    def get(self, request, format=None):
-        if request.user.id is None:
-            return redirect('login')
-
-        return Response(template_name='main.html')
+def do_logout(request):
+    logout(request)
+    return redirect('login')

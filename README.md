@@ -32,6 +32,8 @@ Após isso ative a sua virtualenv:
 Após ativar a sua virtualenv, instale os requirements.txt:
 ```pip install -r requirements.txt```
 
+Configure a sua .env (exemplo disponível em .env-example)
+
 Rode as migrations:
 
 ```python manage.py migrate```

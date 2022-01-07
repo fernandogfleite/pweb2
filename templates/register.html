@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block conteudo %}
+    <div>
+        {% if form.errors %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger">
+                        <strong>{{ error|escape }}</strong>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }}</strong>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div>
+        <form action="{% url 'register' %}" method="post">
+            {% csrf_token %}
+            <div>
+                <label>{{ form.username.label }}</label>
+                {{form.username}}
+            </div>
+            <div>
+                <label>{{ form.email.label }}</label>
+                {{form.email}}
+            </div>
+            <div>
+                <label>{{ form.password.label }}</label>
+                {{form.password}}
+            </div>
+            <div>
+                <button type="submit">Register</button>
+                <a href="{% url 'login' %}">Já possui uma conta? Faça login</a>
+            </div>
+        </form>
+    </div>
+{% endblock%}

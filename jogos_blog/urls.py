@@ -16,12 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls.conf import path, include
 
-from jogos_blog.apps.authentication import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('login/', views.UserLogin.as_view(), name='login'),
-    path('logout/', views.UserLogout.as_view(), name='logout'),
-    path('authentication/', include('jogos_blog.apps.authentication.urls')),
-    path('', views.MainView.as_view(), name='main')
+    path('', include('jogos_blog.apps.authentication.urls'))
 ]

@@ -1,15 +1,13 @@
-from rest_framework.routers import DefaultRouter
 from django.urls.conf import (
-    include,
     path
 )
 
 from jogos_blog.apps.authentication import views
 
-router = DefaultRouter()
-
-router.register('users', views.UserViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('register/', views.register_user, name="register"),
+    path('login/', views.do_login, name="login"),
+    path('logout/', views.do_logout, name="logout"),
+    path('', views.main, name='main')
 ]

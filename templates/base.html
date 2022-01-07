@@ -1,0 +1,13 @@
+{% load static %}
+<html>
+    <head>
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+        <title>Projeto PWEB2</title>
+        {% block extra_css %}
+        {% endblock %}
+    </head>
+    <body>
+        {% block conteudo %}
+        {% endblock %}
+    </body>
+</html>
